@@ -1,0 +1,31 @@
+general:
+    artifacts:
+        - ./TrashApps/app/build/outputs/apk/
+
+machine:
+    java:
+        version: oraclejdk8
+    environment:
+        ANDROID_HOME: /usr/local/android-sdk-linux
+        ADB_INSTALL_TIMEOUT: 240
+        GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx3072M -XX:+HeapDumpOnOutOfMemoryError"'
+
+dependencies:
+    pre:
+        - touch app/google-services.json
+        - echo y | android update sdk --no-ui --all --filter "tools,android-25,build-tools-25.0.2,platform-tools,extra-android-m2repository,extra-android-support,extra-google-m2repository,extra-google-google_play_services"
+    cache_directories:
+        - /usr/local/android-sdk-linux/tools
+        - /usr/local/android-sdk-linux/build-tools/25.0.2
+
+    override:
+        - ANDROID_HOME=/usr/local/android-sdk-linux
+        - chmod +x gradlew
+        - ./gradlew dependencies
+
+test:
+  override:
+        - ./gradlew assembleDebug --stacktrace
+
+  post:
+        - cp -r app/build/outputs $CIRCLE_ARTIFACTS

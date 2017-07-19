@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="Разделы" >
+
+        <menu >
+            <item android:title="Программы"
+                android:id="@+id/imi_progs"
+                android:onClick="menuHandler"/>
+            <item android:title="Игры"
+                android:id="@+id/imi_games"
+                android:onClick="menuHandler"/>
+        </menu>
+    </item>
 
     <item
-        android:title="Reload"
+        android:title="Обновить страницу"
         android:id="@+id/menuLoader"
         android:onClick="menuHandler"/>
 </menu>

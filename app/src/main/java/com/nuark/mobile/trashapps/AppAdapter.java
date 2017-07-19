@@ -45,10 +45,10 @@ public class AppAdapter extends BaseAdapter
         LayoutInflater inflater = context.getLayoutInflater();
         View rowView = inflater.inflate(R.layout.appitem, null, true);
 
-        chipCloud = (ChipCloud) rowView.findViewById(R.id.chip_cloud);
-        appIcon = (ImageView) rowView.findViewById(R.id.appIcon);
-		TextView tvTit = (TextView) rowView.findViewById(R.id.title);
-		TextView tvAVer = (TextView) rowView.findViewById(R.id.androver);
+        chipCloud = rowView.findViewById(R.id.chip_cloud);
+        appIcon = rowView.findViewById(R.id.appIcon);
+		TextView tvTit = rowView.findViewById(R.id.title);
+		TextView tvAVer = rowView.findViewById(R.id.androver);
 
 		tvTit.setText(appslist.get(position).getTitle());
 		tvAVer.setText(appslist.get(position).getAndroidVersion());

@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.nuark.mobile.trashapps.AppAdapter;
 import com.nuark.mobile.trashapps.MainActivity;
 import com.nuark.mobile.trashapps.models.LApplication;
+import com.nuark.mobile.trashapps.utils.Globals;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -34,7 +35,7 @@ public class AppListLoader extends AsyncTask<Object, Void, Object> {
 	LinearLayout mainContent;
 	LinearLayout loadingNotification;
 	ArrayList<LApplication> apps = new ArrayList<>();
-	String url = "https://trashbox.ru/public/progs/tags/os_android/";
+	private String url = Globals.getCurrentUrl();
 
 	public AppListLoader(ListView lv, Activity act, LinearLayout loadingNotification, LinearLayout mainContent, TextView pagesShw)
 	{

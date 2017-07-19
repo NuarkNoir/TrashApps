@@ -1,13 +1,20 @@
 package com.nuark.mobile.trashapps;
 
+import android.Manifest;
 import android.app.*;
+import android.content.pm.PackageManager;
 import android.os.*;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 
 import com.nuark.mobile.trashapps.loaders.AppListLoader;
+import com.nuark.mobile.trashapps.utils.Globals;
+
+import es.dmoral.toasty.Toasty;
 
 public class MainActivity extends Activity 
 {
@@ -27,14 +34,23 @@ public class MainActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-		lv = (ListView) findViewById(R.id.lvapp);
-        loadingNotification = (LinearLayout) findViewById(R.id.loadingNotofiaction);
-        navBar = (LinearLayout) findViewById(R.id.navigationBar);
-        gbk = (Button) findViewById(R.id.navGOBACK);
+        if (ContextCompat.checkSelfPermission(act, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            Toasty.info(act, "Запрашиваем доступ к записи на карту\n" +
+                    "Пожалуйста, для корректной работы приложения, предоставьте разрешение").show();
+            ActivityCompat.requestPermissions(
+                    act,
+                    new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
+                    1
+            );
+        }
+		lv = findViewById(R.id.lvapp);
+        loadingNotification = findViewById(R.id.loadingNotofiaction);
+        navBar = findViewById(R.id.navigationBar);
+        gbk = findViewById(R.id.navGOBACK);
         gbks = gbk;
-        gfw = (Button) findViewById(R.id.navGOFORW);
-        pagesShw = (TextView) findViewById(R.id.pagesShw);
-        mainContent = (LinearLayout) findViewById(R.id.mainContent);
+        gfw = findViewById(R.id.navGOFORW);
+        pagesShw = findViewById(R.id.pagesShw);
+        mainContent = findViewById(R.id.mainContent);
         contentLoader();
         p_comparer();
     }
@@ -55,6 +71,18 @@ public class MainActivity extends Activity
             case R.id.menuLoader:
                 contentLoader();
                 break;
+            case R.id.imi_progs:
+                Globals.setCurrentUrl(Globals.Section.Programs);
+                hardReset();
+                contentLoader();
+                p_comparer();
+                break;
+            case R.id.imi_games:
+                Globals.setCurrentUrl(Globals.Section.Games);
+                hardReset();
+                contentLoader();
+                p_comparer();
+                break;
         }
     }
 
@@ -67,7 +95,7 @@ public class MainActivity extends Activity
     }
 
     public static void setLastpage(String _lastpage) {
-        if (lastpage == "0") lastpage = _lastpage;
+        if (lastpage.contentEquals("0")) lastpage = _lastpage;
         currentpage = _lastpage;
     }
 
@@ -96,5 +124,10 @@ public class MainActivity extends Activity
         if (gbks != null)
             if (Integer.parseInt(lastpage) == Integer.parseInt(currentpage)) gbks.setVisibility(View.GONE);
                 else gbks.setVisibility(View.VISIBLE);
+    }
+
+    public static void hardReset(){
+        lastpage = "0";
+        currentpage = "0";
     }
 }
