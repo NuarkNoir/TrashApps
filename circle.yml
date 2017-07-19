@@ -13,10 +13,10 @@ machine:
 dependencies:
     pre:
         - touch app/google-services.json
-        - echo y | android update sdk --no-ui --all --filter "tools,android-25,build-tools-25.0.2,platform-tools,extra-android-m2repository,extra-android-support,extra-google-m2repository,extra-google-google_play_services"
+        - echo y | android update sdk --no-ui --all --filter "tools,android-26,build-tools-26.0.0-rc1,platform-tools,extra-android-m2repository,extra-android-support,extra-google-m2repository,extra-google-google_play_services"
     cache_directories:
         - /usr/local/android-sdk-linux/tools
-        - /usr/local/android-sdk-linux/build-tools/25.0.2
+        - /usr/local/android-sdk-linux/build-tools/26.0.0-rc1
 
     override:
         - ANDROID_HOME=/usr/local/android-sdk-linux
