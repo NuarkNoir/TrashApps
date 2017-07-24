@@ -62,9 +62,10 @@
 			android:layout_height="match_parent"
 			app:allCaps="true"
 			app:minHorizontalSpacing="4dp"
-			app:selectMode="none"
+			app:selectMode="single"
 			app:textSize="10sp"
-			app:verticalSpacing="4dp" />
+			app:verticalSpacing="4dp"
+			app:gravity="left" />
 
 	</LinearLayout>
 </android.support.v7.widget.CardView>

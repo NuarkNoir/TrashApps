@@ -1,26 +1,28 @@
 package com.nuark.mobile.trashapps;
 
-import android.app.*;
-import android.content.*;
-import android.os.*;
-import android.view.*;
-import android.widget.*;
+import android.app.Activity;
+import android.content.Intent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.adroitandroid.chipcloud.ChipListener;
+import com.koushikdutta.ion.Ion;
+import com.nuark.trashbox.models.App;
+
+import java.util.ArrayList;
 
 import com.adroitandroid.chipcloud.ChipCloud;
-import com.koushikdutta.ion.Ion;
-import com.nuark.mobile.trashapps.*;
-import com.nuark.mobile.trashapps.models.LApplication;
-
-import java.util.*;
 
 public class AppAdapter extends BaseAdapter
  {
     private final Activity context;
-    private ChipCloud chipCloud;
-    private ImageView appIcon;
-    private ArrayList<LApplication> appslist = new ArrayList();
+    private ArrayList<App> appslist = new ArrayList<>();
 
-    public AppAdapter(Activity context, ArrayList applist) {
+    public AppAdapter(Activity context, ArrayList<App> applist) {
         this.context = context;
 		this.appslist = applist;
     }
@@ -31,7 +33,7 @@ public class AppAdapter extends BaseAdapter
     }
 
     @Override
-    public LApplication getItem(int position) {
+    public App getItem(int position) {
         return appslist.get(position);
     }
 
@@ -45,14 +47,27 @@ public class AppAdapter extends BaseAdapter
         LayoutInflater inflater = context.getLayoutInflater();
         View rowView = inflater.inflate(R.layout.appitem, null, true);
 
-        chipCloud = rowView.findViewById(R.id.chip_cloud);
-        appIcon = rowView.findViewById(R.id.appIcon);
+        ChipCloud chipCloud = rowView.findViewById(R.id.chip_cloud);
+        ImageView appIcon = rowView.findViewById(R.id.appIcon);
 		TextView tvTit = rowView.findViewById(R.id.title);
 		TextView tvAVer = rowView.findViewById(R.id.androver);
 
 		tvTit.setText(appslist.get(position).getTitle());
 		tvAVer.setText(appslist.get(position).getAndroidVersion());
         chipCloud.addChips(appslist.get(position).getTagList().toArray(new String[0]));
+        new ChipCloud.Configure()
+                .labels(appslist.get(position).getTagList().toArray(new String[0]))
+                .chipCloud(chipCloud).chipListener(new ChipListener() {
+                    @Override
+                    public void chipSelected(int index) {
+                        MainActivity.instance.loadContentWithTag(appslist.get(position).getTagList().get(index));
+                    }
+                    @Override
+                    public void chipDeselected(int index) {
+
+                    }
+                }).build();
+
         Ion.with(context).load(appslist.get(position).getImageLink()).intoImageView(appIcon);
 
         rowView.setOnClickListener(new View.OnClickListener() {
