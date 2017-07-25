@@ -18,12 +18,15 @@ import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.ProgressCallback;
 import com.nuark.mobile.trashapps.R;
+import com.nuark.trashbox.utils.GenerateDownloadLink;
+import com.nuark.trashbox.utils.LoadFullArticle;
 import com.synnapps.carouselview.CarouselView;
 import com.synnapps.carouselview.ImageListener;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,20 +67,13 @@ public class ArticleContentLoader extends AsyncTask<Object, Void, Object> {
     @Override
     protected Object doInBackground(Object... objects) {
         try {
-            Document d = Jsoup.connect(url).get();
+            Elements d = new LoadFullArticle().GenerateDataset(url);
             d.select("script").remove();
             String at = d.select(".div_text_content").html();
             for (Element img : d.select("div.div_image_screenshot a")) {
                 imagesList.add(img.attr("href"));
             }
-            link = d.select("a.div_topic_top_download_button").first().attr("href");
-            d = Jsoup.connect(link).get();
-            link = d.select("#div_landing_button_zone script").first().html();
-            String[] components = link.replace("show_landing_link2(", "").replace(");", "")
-                    .replace("'", "").split(",");
-            link = components[0] + "/files20/" + components[1] + "_" + components[2] + "/" + components[3];
-            link = link.replace(" ", "");
-            System.out.println(link);
+            link = GenerateDownloadLink.Generate(d);
             return at;
         } catch (IOException e) {
             e.printStackTrace();

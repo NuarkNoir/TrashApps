@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="Разделы" >
-
         <menu >
             <item android:title="Программы"
                 android:id="@+id/imi_progs"
                 android:onClick="menuHandler"/>
             <item android:title="Игры"
                 android:id="@+id/imi_games"
+                android:onClick="menuHandler"/>
+        </menu>
+    </item>
+    <item android:title="Сортировка" >
+        <menu >
+            <item android:title="По рекомендациям"
+                android:id="@+id/srt_rec"
+                android:onClick="menuHandler"/>
+            <item android:title="По дате"
+                android:id="@+id/srt_dat"
+                android:onClick="menuHandler"/>
+            <item android:title="По рейтингу"
+                android:id="@+id/srt_rat"
                 android:onClick="menuHandler"/>
         </menu>
     </item>
