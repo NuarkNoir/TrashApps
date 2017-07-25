@@ -33,7 +33,6 @@ public class MainActivity extends Activity
     public TextView pagesShw;
     public LinearLayout mainContent;
     LinearLayout navBar;
-    private int itemOffset = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -81,6 +80,7 @@ public class MainActivity extends Activity
         ArrayList<App> apps = new ArrayList<>();
         AppAdapter adapter = new AppAdapter(instance, apps);
         lv.setAdapter(adapter);
+		lv.hasMore(true);
         switch (item.getItemId()){
             case R.id.menuLoader:
                 hardReset();
@@ -176,7 +176,6 @@ public class MainActivity extends Activity
     }
 
     public void refreshList() {
-        itemOffset = 0;
         lv.clearList();
         contentLoader();
     }
