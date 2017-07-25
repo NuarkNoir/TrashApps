@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,13 +15,15 @@ import com.nuark.trashbox.models.App;
 import java.util.ArrayList;
 
 import com.adroitandroid.chipcloud.ChipCloud;
+import com.softw4re.views.InfiniteListAdapter;
 
-public class AppAdapter extends BaseAdapter
+public class AppAdapter extends InfiniteListAdapter<App>
  {
     private final Activity context;
     private ArrayList<App> appslist = new ArrayList<>();
 
     public AppAdapter(Activity context, ArrayList<App> applist) {
+        super(context, R.layout.appitem, applist);
         this.context = context;
 		this.appslist = applist;
     }
@@ -83,4 +84,24 @@ public class AppAdapter extends BaseAdapter
 			});
         return rowView;
     }
-}
+
+     @Override
+     public void onNewLoadRequired() {
+         MainActivity.instance.contentLoader();
+     }
+
+     @Override
+     public void onRefresh() {
+         MainActivity.instance.refreshList();
+     }
+
+     @Override
+     public void onItemClick(int i) {
+         System.out.println("oic" + i);
+     }
+
+     @Override
+     public void onItemLongClick(int i) {
+         System.out.println("oilc" + i);
+     }
+ }

@@ -14,6 +14,7 @@ import com.nuark.mobile.trashapps.utils.Globals;
 import com.nuark.trashbox.api.AppsLoader;
 import com.nuark.trashbox.models.App;
 import com.nuark.trashbox.utils.GetLatestPage;
+import com.softw4re.views.InfiniteListView;
 
 import org.jsoup.nodes.Document;
 
@@ -23,28 +24,14 @@ import es.dmoral.toasty.Toasty;
 
 public class AppListLoader extends AsyncTask<Object, Void, Object> {
 
-	String offset = "0";
-	ListView lv;
-	Activity act;
-	TextView pagesShw;
-	LinearLayout mainContent;
-	LinearLayout loadingNotification;
 	ArrayList<App> apps = new ArrayList<>();
 	private String url = Globals.getCurrentUrl();
 
-	public AppListLoader(ListView lv, Activity act, LinearLayout loadingNotification, LinearLayout mainContent, TextView pagesShw)
-	{
-		this.lv = lv;
-		this.act = act;
-		this.loadingNotification = loadingNotification;
-		this.mainContent = mainContent;
-		this.pagesShw = pagesShw;
-	}
+	public AppListLoader() {  }
 
 	@Override
 	protected void onPreExecute() {
-		loadingNotification.setVisibility(View.VISIBLE);
-		mainContent.setVisibility(View.GONE);
+		MainActivity.instance.lv.startLoading();
 		super.onPreExecute();
 	}
 
@@ -67,17 +54,18 @@ public class AppListLoader extends AsyncTask<Object, Void, Object> {
 	@Override
 	protected void onPostExecute(Object result)
 	{
+		super.onPostExecute(result);
+		MainActivity instance = MainActivity.instance;
 		MainActivity.p_comparer();
 		String tmp = MainActivity.getCurrentpage() + "/" + MainActivity.getLastpage();
-		pagesShw.setText(tmp);
-		lv.setAdapter(new AppAdapter(act, apps));
-		loadingNotification.setVisibility(View.GONE);
-		mainContent.setVisibility(View.VISIBLE);
+		instance.pagesShw.setText(tmp);
+		instance.lv.addAll(apps);
+		instance.mainContent.setVisibility(View.VISIBLE);
 		if (result.toString().contains("error")){
-			Toasty.error(act, result.toString().replace("error", "Ошибка!"), Toast.LENGTH_LONG, true).show();
+			Toasty.error(instance, result.toString().replace("error", "Ошибка!"), Toast.LENGTH_LONG, true).show();
 		} else if (result.toString().contains("warning")){
-			Toasty.error(act, result.toString().replace("warning", "Предупреждение!"), Toast.LENGTH_LONG, true).show();
+			Toasty.error(instance, result.toString().replace("warning", "Предупреждение!"), Toast.LENGTH_LONG, true).show();
 		}
-		super.onPostExecute(result);
+		instance.lv.stopLoading();
 	}
 }

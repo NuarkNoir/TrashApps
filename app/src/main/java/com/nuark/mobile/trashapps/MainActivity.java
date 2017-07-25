@@ -13,7 +13,11 @@ import android.widget.*;
 
 import com.nuark.mobile.trashapps.loaders.AppListLoader;
 import com.nuark.mobile.trashapps.utils.Globals;
+import com.nuark.trashbox.models.App;
 import com.nuark.trashbox.utils.Enumerators.Sort;
+import com.softw4re.views.InfiniteListView;
+
+import java.util.ArrayList;
 
 import es.dmoral.toasty.Toasty;
 
@@ -24,12 +28,13 @@ public class MainActivity extends Activity
     public static String currentpage = "0";
     public static Sort sortingType = Sort.Recomendation;
     Activity act = this;
-    ListView lv;
+    public InfiniteListView lv;
     static Button gbk, gfw;
-    TextView pagesShw;
-    LinearLayout mainContent;
-	LinearLayout loadingNotification, navBar;
-	
+    public TextView pagesShw;
+    public LinearLayout mainContent;
+    LinearLayout navBar;
+    private int itemOffset = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -46,12 +51,17 @@ public class MainActivity extends Activity
         }
         instance = this;
 		lv = findViewById(R.id.lvapp);
-        loadingNotification = findViewById(R.id.loadingNotofiaction);
         navBar = findViewById(R.id.navigationBar);
         gbk = findViewById(R.id.navGOBACK);
         gfw = findViewById(R.id.navGOFORW);
         pagesShw = findViewById(R.id.pagesShw);
         mainContent = findViewById(R.id.mainContent);
+
+        ArrayList<App> apps = new ArrayList<>();
+        AppAdapter adapter = new AppAdapter(instance, apps);
+        lv.setAdapter(adapter);
+        lv.hasMore(true);
+
         contentLoader();
         p_comparer();
     }
@@ -68,6 +78,9 @@ public class MainActivity extends Activity
     }
 
     public void menuHandler(MenuItem item) {
+        ArrayList<App> apps = new ArrayList<>();
+        AppAdapter adapter = new AppAdapter(instance, apps);
+        lv.setAdapter(adapter);
         switch (item.getItemId()){
             case R.id.menuLoader:
                 hardReset();
@@ -86,11 +99,29 @@ public class MainActivity extends Activity
                 contentLoader();
                 p_comparer();
                 break;
+            case R.id.srt_rec:
+                sortingType = Sort.Recomendation;
+                hardReset();
+                contentLoader();
+                p_comparer();
+                break;
+            case R.id.srt_dat:
+                sortingType = Sort.Date;
+                hardReset();
+                contentLoader();
+                p_comparer();
+                break;
+            case R.id.srt_rat:
+                sortingType = Sort.Rating;
+                hardReset();
+                contentLoader();
+                p_comparer();
+                break;
         }
     }
 
     void contentLoader(){
-        new AppListLoader(lv, act, loadingNotification, mainContent, pagesShw).execute();
+        new AppListLoader().execute();
     }
 
     public void loadContentWithTag(String tag){
@@ -99,6 +130,9 @@ public class MainActivity extends Activity
         else
             Globals.setCurrentUrl(com.nuark.trashbox.Globals.Statics.getGamesUrl());
         Globals.setCurrentUrl(Globals.getCurrentUrl().replace("os_android", TagResolver(tag)));
+        ArrayList<App> apps = new ArrayList<>();
+        AppAdapter adapter = new AppAdapter(instance, apps);
+        lv.setAdapter(adapter);
         hardReset();
         contentLoader();
         p_comparer();
@@ -122,23 +156,29 @@ public class MainActivity extends Activity
         switch (view.getId()){
             case R.id.navGOFORW:
                 currentpage = String.valueOf(Integer.parseInt(getCurrentpage())-1);
-                new AppListLoader(lv, act, loadingNotification, mainContent, pagesShw).execute();
                 break;
             case R.id.navGOBACK:
                 currentpage = String.valueOf(Integer.parseInt(getCurrentpage())+1);
-                new AppListLoader(lv, act, loadingNotification, mainContent, pagesShw).execute();
                 break;
         }
+        new AppListLoader().execute();
     }
 
     public static void p_comparer(){
         if (Integer.parseInt(lastpage) == Integer.parseInt(currentpage)) gbk.setVisibility(View.GONE);
             else gbk.setVisibility(View.VISIBLE);
+        if (currentpage == "1") instance.lv.hasMore(false);
     }
 
     public static void hardReset(){
         lastpage = "0";
         currentpage = "0";
+    }
+
+    public void refreshList() {
+        itemOffset = 0;
+        lv.clearList();
+        contentLoader();
     }
 
     public static String TagResolver(String tag){
@@ -209,6 +249,7 @@ public class MainActivity extends Activity
             case "Диспетчеры задач":
                 tag = "progs_disp-os_android/";
                 break;
+            default:
             case "Другие":
                 tag = "progs_other-os_android/";
                 break;
