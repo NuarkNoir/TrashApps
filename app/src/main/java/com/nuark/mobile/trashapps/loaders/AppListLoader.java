@@ -42,6 +42,7 @@ public class AppListLoader extends AsyncTask<Object, Void, Object> {
 		{
 			MainActivity.setLastpage(new GetLatestPage().Get(url));
 			apps = new AppsLoader(url + "page_topics/" + MainActivity.getCurrentpage() + "/", MainActivity.sortingType).Load();
+			MainActivity.currentpage = String.valueOf(Integer.parseInt(MainActivity.getCurrentpage())-1);
 			return "success";
 		}
 		catch (Exception e)
