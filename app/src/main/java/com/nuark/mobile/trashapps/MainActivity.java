@@ -162,7 +162,7 @@ public class MainActivity extends Activity
                 currentpage = String.valueOf(Integer.parseInt(getCurrentpage())+1);
                 break;
         }
-        new AppListLoader().execute();
+        contentLoader();
     }
 
     public static void p_comparer(){
@@ -177,6 +177,8 @@ public class MainActivity extends Activity
     }
 
     public void refreshList() {
+		p_comparer();
+		currentpage = String.valueOf(Integer.parseInt(getCurrentpage())-1);
         lv.clearList();
         contentLoader();
     }
