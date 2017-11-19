@@ -18,21 +18,18 @@ import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.ProgressCallback;
 import com.nuark.mobile.trashapps.R;
-import com.nuark.trashbox.utils.GenerateDownloadLink;
-import com.nuark.trashbox.utils.LoadFullArticle;
 import com.synnapps.carouselview.CarouselView;
 import com.synnapps.carouselview.ImageListener;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import es.dmoral.toasty.Toasty;
+import xyz.nuark.trashbox.AppArticlePage;
+import xyz.nuark.trashbox.models.App;
+import xyz.nuark.trashbox.models.AppArticle;
+import xyz.nuark.trashbox.utils.Utils;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
@@ -43,20 +40,20 @@ import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class ArticleContentLoader extends AsyncTask<Object, Void, Object> {
 
-    private String url;
     private TextView articleText;
     private CarouselView carouselView;
     private Button downloadButton;
     private ArrayList<String> imagesList = new ArrayList<>();
     private Application context;
     private String link;
+    private AppArticlePage aap;
 
-    public ArticleContentLoader(String url, TextView articleText, CarouselView carouselView, Button downloadButton, Application context) {
-        this.url = url;
-        this.articleText = articleText;
+    public ArticleContentLoader(App app, TextView articleText, CarouselView carouselView, Button downloadButton, Application context) {
         this.carouselView = carouselView;
+        this.articleText = articleText;
         this.downloadButton = downloadButton;
         this.context = context;
+        this.aap = new AppArticlePage(app.getTopicLink(), app.getImageLink());
     }
 
     @Override
@@ -67,14 +64,12 @@ public class ArticleContentLoader extends AsyncTask<Object, Void, Object> {
     @Override
     protected Object doInBackground(Object... objects) {
         try {
-            Elements d = new LoadFullArticle().GenerateDataset(url);
-            d.select("script").remove();
-            String at = d.select(".div_text_content").html();
-            for (Element img : d.select("div.div_image_screenshot a")) {
-                imagesList.add(img.attr("href"));
-            }
-            link = GenerateDownloadLink.Generate(d);
-            return at;
+            AppArticle aa = aap.getArticle();
+            Utils u = new Utils();
+            link = aa.getDownloadLinks().entrySet().iterator().next().getValue();
+            link = u.GenerateDownloadLink(link);
+            imagesList = aa.getScreenshotsUrl();
+            return aa.getArticleContent();
         } catch (IOException e) {
             e.printStackTrace();
             return e.getLocalizedMessage();

@@ -8,13 +8,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.*;
 
 import com.nuark.mobile.trashapps.loaders.AppListLoader;
-import com.nuark.mobile.trashapps.utils.Globals;
-import com.nuark.trashbox.models.App;
-import com.nuark.trashbox.utils.Enumerators.Sort;
+
+import xyz.nuark.trashbox.AppsPage;
+import xyz.nuark.trashbox.Globals;
+import xyz.nuark.trashbox.models.App;
+import xyz.nuark.trashbox.utils.Enumerators;
 import com.softw4re.views.InfiniteListView;
 
 import java.util.ArrayList;
@@ -24,37 +25,27 @@ import es.dmoral.toasty.Toasty;
 public class MainActivity extends Activity
 {
     public static MainActivity instance;
-    static String lastpage = "0";
-    public static String currentpage = "0";
-    public static Sort sortingType = Sort.Recomendation;
-    Activity act = this;
     public InfiniteListView lv;
-    static Button gbk, gfw;
-    public TextView pagesShw;
     public LinearLayout mainContent;
-    LinearLayout navBar;
+    public AppsPage appsPage = null;
+    public AppListLoader all;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        debug();
-        if (ContextCompat.checkSelfPermission(act, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            Toasty.info(act, "Запрашиваем доступ к записи на карту\n" +
+        instance = this;
+        if (ContextCompat.checkSelfPermission(instance, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            Toasty.info(instance, "Запрашиваем доступ к записи на карту\n" +
                     "Пожалуйста, для корректной работы приложения, предоставьте разрешение").show();
             ActivityCompat.requestPermissions(
-                    act,
+                    instance,
                     new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
                     1
             );
         }
-        instance = this;
 		lv = findViewById(R.id.lvapp);
-        navBar = findViewById(R.id.navigationBar);
-        gbk = findViewById(R.id.navGOBACK);
-        gfw = findViewById(R.id.navGOFORW);
-        pagesShw = findViewById(R.id.pagesShw);
         mainContent = findViewById(R.id.mainContent);
 
         ArrayList<App> apps = new ArrayList<>();
@@ -62,13 +53,8 @@ public class MainActivity extends Activity
         lv.setAdapter(adapter);
         lv.hasMore(true);
 
+        all = new AppListLoader();
         contentLoader();
-        p_comparer();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
     }
 
     @Override
@@ -84,109 +70,50 @@ public class MainActivity extends Activity
 		lv.hasMore(true);
         switch (item.getItemId()){
             case R.id.menuLoader:
-                hardReset();
                 contentLoader();
-                p_comparer();
                 break;
             case R.id.imi_progs:
-                Globals.setCurrentUrl(com.nuark.trashbox.Globals.Statics.getProgsUrl());
-                hardReset();
+                all = new AppListLoader(Enumerators.Type.Apps);
                 contentLoader();
-                p_comparer();
                 break;
             case R.id.imi_games:
-                Globals.setCurrentUrl(com.nuark.trashbox.Globals.Statics.getGamesUrl());
-                hardReset();
+                all = new AppListLoader(Enumerators.Type.Games);
                 contentLoader();
-                p_comparer();
                 break;
             case R.id.srt_rec:
-                sortingType = Sort.Recomendation;
-                hardReset();
+                all = new AppListLoader();
+                all = all.setSorting(Enumerators.Sort.Recomendation);
                 contentLoader();
-                p_comparer();
                 break;
             case R.id.srt_dat:
-                sortingType = Sort.Date;
-                hardReset();
+                all = new AppListLoader();
+                all = all.setSorting(Enumerators.Sort.Date);
                 contentLoader();
-                p_comparer();
                 break;
             case R.id.srt_rat:
-                sortingType = Sort.Rating;
-                hardReset();
+                all = new AppListLoader();
+                all = all.setSorting(Enumerators.Sort.Rating);
                 contentLoader();
-                p_comparer();
                 break;
         }
     }
 
     void contentLoader(){
-        new AppListLoader().execute();
+        all.execute();
     }
 
     public void loadContentWithTag(String tag){
-        if (Globals.getCurrentUrl().contains("progs"))
-            Globals.setCurrentUrl(com.nuark.trashbox.Globals.Statics.getProgsUrl());
-        else
-            Globals.setCurrentUrl(com.nuark.trashbox.Globals.Statics.getGamesUrl());
-        Globals.setCurrentUrl(Globals.getCurrentUrl().replace("os_android", Globals.Tagger.getTag(tag)));
+        System.out.println(tag);
         ArrayList<App> apps = new ArrayList<>();
         AppAdapter adapter = new AppAdapter(instance, apps);
         lv.setAdapter(adapter);
-        hardReset();
+        all = new AppListLoader(Globals.Tagger.getTag(tag));
         contentLoader();
-        p_comparer();
-    }
-
-    public static String getLastpage() {
-        return lastpage;
-    }
-
-    public static void setLastpage(String _lastpage) {
-        if (lastpage.contentEquals("0")) lastpage = _lastpage;
-        if (currentpage.contentEquals("0")) currentpage = _lastpage;
-    }
-
-    public static String getCurrentpage() {
-        return currentpage;
-    }
-
-    public void navigationHandler(View view) {
-        p_comparer();
-        switch (view.getId()){
-            case R.id.navGOFORW:
-                currentpage = String.valueOf(Integer.parseInt(getCurrentpage())-1);
-                break;
-            case R.id.navGOBACK:
-                currentpage = String.valueOf(Integer.parseInt(getCurrentpage())+1);
-                break;
-        }
-        contentLoader();
-    }
-
-    public static void p_comparer(){
-        if (Integer.parseInt(lastpage) == Integer.parseInt(currentpage)) gbk.setVisibility(View.GONE);
-            else gbk.setVisibility(View.VISIBLE);
-        if (currentpage.contentEquals("1")) instance.lv.hasMore(false);
-    }
-
-    public static void hardReset(){
-        lastpage = "0";
-        currentpage = "0";
     }
 
     public void refreshList() {
-		p_comparer();
-		currentpage = String.valueOf(Integer.parseInt(getCurrentpage())-1);
         lv.clearList();
+        all = new AppListLoader();
         contentLoader();
-    }
-
-    void debug(){
-        System.out.println("+++++++++++++++++DEBUG");
-        System.out.println(Globals.getCurrentUrl());
-        System.out.println(Globals.Tagger.Tag.size());
-        System.out.println("DEBUG+++++++++++++++++");
     }
 }

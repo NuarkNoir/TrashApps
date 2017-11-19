@@ -1,33 +1,53 @@
 package com.nuark.mobile.trashapps.loaders;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nuark.mobile.trashapps.AppAdapter;
 import com.nuark.mobile.trashapps.MainActivity;
-import com.nuark.mobile.trashapps.utils.Globals;
-import com.nuark.trashbox.api.AppsLoader;
-import com.nuark.trashbox.models.App;
-import com.nuark.trashbox.utils.GetLatestPage;
-import com.softw4re.views.InfiniteListView;
-
-import org.jsoup.nodes.Document;
 
 import java.util.ArrayList;
 
 import es.dmoral.toasty.Toasty;
+import xyz.nuark.trashbox.AppsPage;
+import xyz.nuark.trashbox.models.App;
+import xyz.nuark.trashbox.utils.Enumerators;
 
 public class AppListLoader extends AsyncTask<Object, Void, Object> {
 
-	ArrayList<App> apps = new ArrayList<>();
-	private String url = Globals.getCurrentUrl();
+	private ArrayList<App> apps = new ArrayList<>();
+	public Enumerators.Sort sort = Enumerators.Sort.Recomendation;
+	public Enumerators.Type type = Enumerators.Type.Apps;
+	public String link = "";
 
-	public AppListLoader() {  }
+	public AppListLoader() {
+
+	}
+
+	public AppListLoader(Enumerators.Type type) {
+		this.type = type;
+	}
+
+	public AppListLoader(Enumerators.Sort sort, Enumerators.Type type) {
+		this.sort = sort;
+		this.type = type;
+	}
+
+	public AppListLoader(String link) {
+		this.link = link;
+	}
+
+	public AppListLoader(Enumerators.Sort sort, String link) {
+		this.sort = sort;
+		this.link = link;
+	}
+
+	public AppListLoader setSorting(Enumerators.Sort sort){
+		if (link.length() > 0)
+			return new AppListLoader(sort, this.type);
+		else
+			return new AppListLoader(sort, this.link);
+	}
 
 	@Override
 	protected void onPreExecute() {
@@ -38,11 +58,26 @@ public class AppListLoader extends AsyncTask<Object, Void, Object> {
 	@Override
 	protected Object doInBackground(Object... p1)
 	{
+		System.out.println("Statring background apps list loading task...");
+		System.out.println(sort);
+		System.out.println(type);
+		System.out.println(link);
 		try
 		{
-			MainActivity.setLastpage(new GetLatestPage().Get(url));
-			apps = new AppsLoader(url + "page_topics/" + MainActivity.getCurrentpage() + "/", MainActivity.sortingType).Load();
-			MainActivity.currentpage = String.valueOf(Integer.parseInt(MainActivity.getCurrentpage())-1);
+			System.out.println("Checking...");
+			AppsPage worker;
+			if (MainActivity.instance.appsPage == null){
+				System.out.println("Creating new worker...");
+				if (link.length() > 0)
+					worker = new AppsPage(link, sort);
+				else
+					worker = new AppsPage(type, sort);
+				MainActivity.instance.appsPage = worker;
+			} else {
+				System.out.println("Using existing worker...");
+				worker = MainActivity.instance.appsPage;
+			}
+			this.apps = worker.getNextAppsPage();
 			return "success";
 		}
 		catch (Exception e)
@@ -57,9 +92,6 @@ public class AppListLoader extends AsyncTask<Object, Void, Object> {
 	{
 		super.onPostExecute(result);
 		MainActivity instance = MainActivity.instance;
-		MainActivity.p_comparer();
-		String tmp = MainActivity.getCurrentpage() + "/" + MainActivity.getLastpage();
-		instance.pagesShw.setText(tmp);
 		instance.lv.addAll(apps);
 		instance.mainContent.setVisibility(View.VISIBLE);
 		if (result.toString().contains("error")){

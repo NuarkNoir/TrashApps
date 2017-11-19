@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import es.dmoral.toasty.Toasty;
+import xyz.nuark.trashbox.models.App;
 
 public class ApplicationActivity extends Activity {
 
@@ -34,6 +35,7 @@ public class ApplicationActivity extends Activity {
     ImageView appIcon;
     Button dwnBtn;
     CarouselView carouselView;
+    ArrayList<String> tagList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +45,7 @@ public class ApplicationActivity extends Activity {
         link = getIntent().getExtras().getString("LINK");
         androidVersion = getIntent().getExtras().getString("ANDROVER");
         icolink = getIntent().getExtras().getString("ICON");
+        tagList = getIntent().getExtras().getStringArrayList("TAGS");
         getActionBar().setTitle(title);
 
         articleView = findViewById(R.id.articleView);
@@ -56,7 +59,9 @@ public class ApplicationActivity extends Activity {
         androver.setText(androidVersion);
         dwnBtn.setVisibility(View.GONE);
 
-        new ArticleContentLoader(link, articleView, carouselView, dwnBtn, getApplication()).execute();
+        App app = new App(title,  androidVersion, link, icolink, tagList);
+
+        new ArticleContentLoader(app, articleView, carouselView, dwnBtn, getApplication()).execute();
         Ion.with(getApplicationContext()).load(icolink).intoImageView(appIcon);
     }
 }

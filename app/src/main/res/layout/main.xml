@@ -8,37 +8,6 @@
 	android:orientation="vertical"
 	android:visibility="gone">
 
-		<LinearLayout
-			android:id="@+id/navigationBar"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:orientation="horizontal">
-
-			<Button
-				android:id="@+id/navGOBACK"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:onClick="navigationHandler"
-				android:text="&lt;--" />
-
-			<TextView
-				android:id="@+id/pagesShw"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:text="0000/0000"
-				android:textAlignment="center" />
-
-			<Button
-				android:id="@+id/navGOFORW"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:onClick="navigationHandler"
-				android:text="--&gt;" />
-		</LinearLayout>
-
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
