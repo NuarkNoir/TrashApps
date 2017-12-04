@@ -1,104 +1,71 @@
 package com.nuark.mobile.trashapps.loaders;
 
-import android.os.AsyncTask;
-import android.view.View;
-import android.widget.Toast;
+import android.content.Context;
+import android.support.v4.content.AsyncTaskLoader;
+import android.util.Log;
 
 import com.nuark.mobile.trashapps.MainActivity;
 
 import java.util.ArrayList;
 
-import es.dmoral.toasty.Toasty;
 import xyz.nuark.trashbox.AppsPage;
+import xyz.nuark.trashbox.Globals;
 import xyz.nuark.trashbox.models.App;
-import xyz.nuark.trashbox.utils.Enumerators;
 
-public class AppListLoader extends AsyncTask<Object, Void, Object> {
+public class AppListLoader extends AsyncTaskLoader<ArrayList<App>> {
 
-	private ArrayList<App> apps = new ArrayList<>();
-	public Enumerators.Sort sort = Enumerators.Sort.Recomendation;
-	public Enumerators.Type type = Enumerators.Type.Apps;
-	public String link = "";
+	private final String TAG = getClass().getSimpleName();
+	private String tag = "";
+	boolean wt = false;
 
-	public AppListLoader() {
-
-	}
-
-	public AppListLoader(Enumerators.Type type) {
-		this.type = type;
-	}
-
-	public AppListLoader(Enumerators.Sort sort, Enumerators.Type type) {
-		this.sort = sort;
-		this.type = type;
-	}
-
-	public AppListLoader(String link) {
-		this.link = link;
-	}
-
-	public AppListLoader(Enumerators.Sort sort, String link) {
-		this.sort = sort;
-		this.link = link;
-	}
-
-	public AppListLoader setSorting(Enumerators.Sort sort){
-		if (link.length() > 0)
-			return new AppListLoader(sort, this.type);
-		else
-			return new AppListLoader(sort, this.link);
+	public AppListLoader(Context context) {
+		super(context);
 	}
 
 	@Override
-	protected void onPreExecute() {
+	public ArrayList<App> loadInBackground() {
+		Log.d(TAG, "loadInBackground");
+		if (MainActivity.instance.worker == null){
+			MainActivity.instance.worker = new AppsPage();
+		}
+		if (tag.length() > 0 && !wt){
+			MainActivity.instance.worker = new AppsPage("https://trashbox.ru" + Globals.Tagger.getTag(tag));
+			wt = true;
+			tag = "";
+		}
+		ArrayList<App> aList = MainActivity.instance.worker.getNextAppsPage();
+		Log.d(TAG, "loadInBackground: aList.len = " + aList.size());
+		return aList;
+	}
+
+	@Override
+	public void forceLoad() {
+		Log.d(TAG, "forceLoad");
+		super.forceLoad();
+	}
+
+	@Override
+	protected void onStartLoading() {
+		super.onStartLoading();
+		Log.d(TAG, "onStartLoading");
+		forceLoad();
 		MainActivity.instance.lv.startLoading();
-		super.onPreExecute();
 	}
 
 	@Override
-	protected Object doInBackground(Object... p1)
-	{
-		System.out.println("Statring background apps list loading task...");
-		System.out.println(sort);
-		System.out.println(type);
-		System.out.println(link);
-		try
-		{
-			System.out.println("Checking...");
-			AppsPage worker;
-			if (MainActivity.instance.appsPage == null){
-				System.out.println("Creating new worker...");
-				if (link.length() > 0)
-					worker = new AppsPage(link, sort);
-				else
-					worker = new AppsPage(type, sort);
-				MainActivity.instance.appsPage = worker;
-			} else {
-				System.out.println("Using existing worker...");
-				worker = MainActivity.instance.appsPage;
-			}
-			this.apps = worker.getNextAppsPage();
-			return "success";
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return "error\n" + e.getLocalizedMessage();
-		}
+	protected void onStopLoading() {
+		super.onStopLoading();
+		Log.d(TAG, "onStopLoading");
+		MainActivity.instance.lv.stopLoading();
 	}
 
 	@Override
-	protected void onPostExecute(Object result)
-	{
-		super.onPostExecute(result);
-		MainActivity instance = MainActivity.instance;
-		instance.lv.addAll(apps);
-		instance.mainContent.setVisibility(View.VISIBLE);
-		if (result.toString().contains("error")){
-			Toasty.error(instance, result.toString().replace("error", "Ошибка!"), Toast.LENGTH_LONG, true).show();
-		} else if (result.toString().contains("warning")){
-			Toasty.error(instance, result.toString().replace("warning", "Предупреждение!"), Toast.LENGTH_LONG, true).show();
-		}
-		instance.lv.stopLoading();
+	public void deliverResult(ArrayList<App> data) {
+		Log.d(TAG, "deliverResult");
+		super.deliverResult(data);
+	}
+
+	public void loadTag(String tag){
+		this.tag = tag;
 	}
 }

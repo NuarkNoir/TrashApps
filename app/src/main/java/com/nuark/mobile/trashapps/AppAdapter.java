@@ -1,5 +1,6 @@
 package com.nuark.mobile.trashapps;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -9,16 +10,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.adroitandroid.chipcloud.ChipCloud;
 import com.adroitandroid.chipcloud.ChipListener;
 import com.koushikdutta.ion.Ion;
-
-import xyz.nuark.trashbox.models.App;
+import com.softw4re.views.InfiniteListAdapter;
 
 import java.util.ArrayList;
 
-import com.adroitandroid.chipcloud.ChipCloud;
-import com.nuark.mobile.trashapps.loaders.AppListLoader;
-import com.softw4re.views.InfiniteListAdapter;
+import xyz.nuark.trashbox.AppsPage;
+import xyz.nuark.trashbox.models.App;
 
 public class AppAdapter extends InfiniteListAdapter<App> {
     private final Activity context;
@@ -63,7 +63,8 @@ public class AppAdapter extends InfiniteListAdapter<App> {
                 .chipCloud(chipCloud).chipListener(new ChipListener() {
             @Override
             public void chipSelected(int index) {
-                MainActivity.instance.loadContentWithTag(appslist.get(position).getTagList().get(index));
+                String tag = appslist.get(position).getTagList().get(index);
+                MainActivity.instance.loadContentWithTag(tag);
             }
 
             @Override
@@ -92,19 +93,37 @@ public class AppAdapter extends InfiniteListAdapter<App> {
 
     @Override
     public void onNewLoadRequired() {
-        if (MainActivity.instance.all.getStatus() == AsyncTask.Status.FINISHED) {
-            AppListLoader aa = MainActivity.instance.all;
-            if (aa.link.length() > 0)
-                MainActivity.instance.all = new AppListLoader(aa.sort, aa.link);
-            else
-                MainActivity.instance.all = new AppListLoader(aa.sort, aa.type);
-            MainActivity.instance.contentLoader();
+        MainActivity i = MainActivity.instance;
+        if (i.all == null) {
+            i.lv.stopLoading();
+            return;
         }
+        i.all.startLoading();
     }
 
+    @SuppressLint("StaticFieldLeak")
     @Override
     public void onRefresh() {
-        MainActivity.instance.refreshList();
+        MainActivity i = MainActivity.instance;
+        if (i.all == null){
+            i.lv.stopLoading();
+            return;
+        }
+        i.all.cancelLoadInBackground();
+        new AsyncTask<Void,Void,Void>(){
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                i.mLoader.startLoading();
+                i.lv.stopLoading();
+            }
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                i.worker = new AppsPage();
+                return null;
+            }
+        }.execute();
     }
 
     @Override

@@ -2,30 +2,18 @@ package com.nuark.mobile.trashapps;
 
 
 import android.app.Activity;
-import android.app.NotificationManager;
-import android.content.Context;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.v7.app.NotificationCompat;
-import android.text.Html;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
-import com.koushikdutta.ion.ProgressCallback;
 import com.nuark.mobile.trashapps.loaders.ArticleContentLoader;
 import com.synnapps.carouselview.CarouselView;
-import com.synnapps.carouselview.ImageListener;
 
-import java.io.File;
 import java.util.ArrayList;
 
-import es.dmoral.toasty.Toasty;
 import xyz.nuark.trashbox.models.App;
 
 public class ApplicationActivity extends Activity {

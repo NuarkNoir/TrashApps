@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.koushikdutta.async.future.FutureCallback;
@@ -25,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import es.dmoral.toasty.Toasty;
 import xyz.nuark.trashbox.AppArticlePage;
 import xyz.nuark.trashbox.models.App;
 import xyz.nuark.trashbox.models.AppArticle;
@@ -82,7 +82,8 @@ public class ArticleContentLoader extends AsyncTask<Object, Void, Object> {
             public void onClick(View view) {
                 String tmp[] = dwnlink.split("/");
                 String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/TrasherDownloads/";
-                if (!new File(path).exists()) if(!new File(path).mkdir()) Toasty.error(context, "Saving folder can't be created! Check you give application rights to do this!").show();
+                if (!new File(path).exists()) if(!new File(path).mkdir())
+                    Toast.makeText(context, "Saving folder can't be created! Check you give application rights to do this!", Toast.LENGTH_LONG).show();
                 final String filename = Uri.decode(tmp[tmp.length-1]);
                 final NotificationCompat.Builder mNotificationBuilder = new NotificationCompat.Builder(context);
                 final NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
@@ -110,7 +111,7 @@ public class ArticleContentLoader extends AsyncTask<Object, Void, Object> {
                                     mNotificationBuilder.setContentText("Файл скачан!").setSubText("Успех!").setColor(Color.GREEN);
                                     notificationManager.notify(1337, mNotificationBuilder.build());
                                 } else {
-                                    Toasty.error(context, e.getMessage()).show();
+                                    Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
                                     mNotificationBuilder.setContentText(e.getMessage()).setSubText("Ошибка!").setColor(Color.RED);
                                     notificationManager.notify(1337, mNotificationBuilder.build());
                                 }

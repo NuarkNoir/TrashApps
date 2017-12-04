@@ -1,119 +1,82 @@
 package com.nuark.mobile.trashapps;
 
 import android.Manifest;
-import android.app.*;
+import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.os.*;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.*;
+import android.support.v4.content.Loader;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.nuark.mobile.trashapps.loaders.AppListLoader;
-
-import xyz.nuark.trashbox.AppsPage;
-import xyz.nuark.trashbox.Globals;
-import xyz.nuark.trashbox.models.App;
-import xyz.nuark.trashbox.utils.Enumerators;
 import com.softw4re.views.InfiniteListView;
 
 import java.util.ArrayList;
 
-import es.dmoral.toasty.Toasty;
+import xyz.nuark.trashbox.AppsPage;
+import xyz.nuark.trashbox.models.App;
 
-public class MainActivity extends Activity
-{
+public class MainActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<ArrayList<App>> {
     public static MainActivity instance;
     public InfiniteListView lv;
     public LinearLayout mainContent;
-    public AppsPage appsPage = null;
+    public AppsPage worker = null;
     public AppListLoader all;
+    public Loader<ArrayList<App>> mLoader;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         instance = this;
-        if (ContextCompat.checkSelfPermission(instance, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            Toasty.info(instance, "Запрашиваем доступ к записи на карту\n" +
-                    "Пожалуйста, для корректной работы приложения, предоставьте разрешение").show();
+        if (ContextCompat.checkSelfPermission(instance, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(instance, "Запрашиваем доступ к записи на карту\n" +
+                    "Пожалуйста, для корректной работы приложения, предоставьте разрешение", Toast.LENGTH_LONG).show();
             ActivityCompat.requestPermissions(
                     instance,
-                    new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     1
             );
         }
-		lv = findViewById(R.id.lvapp);
+
+        lv = findViewById(R.id.lvapp);
         mainContent = findViewById(R.id.mainContent);
 
-        ArrayList<App> apps = new ArrayList<>();
-        AppAdapter adapter = new AppAdapter(instance, apps);
+        AppAdapter adapter = new AppAdapter(instance, new ArrayList<>());
         lv.setAdapter(adapter);
-        lv.hasMore(true);
 
-        all = new AppListLoader();
-        contentLoader();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
-    }
-
-    public void menuHandler(MenuItem item) {
-        ArrayList<App> apps = new ArrayList<>();
-        AppAdapter adapter = new AppAdapter(instance, apps);
-        lv.setAdapter(adapter);
-		lv.hasMore(true);
-        switch (item.getItemId()){
-            case R.id.menuLoader:
-                contentLoader();
-                break;
-            case R.id.imi_progs:
-                all = new AppListLoader(Enumerators.Type.Apps);
-                contentLoader();
-                break;
-            case R.id.imi_games:
-                all = new AppListLoader(Enumerators.Type.Games);
-                contentLoader();
-                break;
-            case R.id.srt_rec:
-                all = new AppListLoader();
-                all = all.setSorting(Enumerators.Sort.Recomendation);
-                contentLoader();
-                break;
-            case R.id.srt_dat:
-                all = new AppListLoader();
-                all = all.setSorting(Enumerators.Sort.Date);
-                contentLoader();
-                break;
-            case R.id.srt_rat:
-                all = new AppListLoader();
-                all = all.setSorting(Enumerators.Sort.Rating);
-                contentLoader();
-                break;
-        }
-    }
-
-    void contentLoader(){
-        all.execute();
+        mLoader = getSupportLoaderManager().initLoader(1, null, this);
     }
 
     public void loadContentWithTag(String tag){
-        System.out.println(tag);
-        ArrayList<App> apps = new ArrayList<>();
-        AppAdapter adapter = new AppAdapter(instance, apps);
+        AppAdapter adapter = new AppAdapter(instance, new ArrayList<>());
         lv.setAdapter(adapter);
-        all = new AppListLoader(Globals.Tagger.getTag(tag));
-        contentLoader();
+        all.loadTag(tag);
+        mLoader.startLoading();
     }
 
-    public void refreshList() {
-        lv.clearList();
-        all = new AppListLoader();
-        contentLoader();
+    @Override
+    public Loader<ArrayList<App>> onCreateLoader(int i, Bundle bundle) {
+        mLoader = new AppListLoader(instance);
+        all = (AppListLoader) mLoader;
+        return mLoader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<ArrayList<App>> loader, ArrayList<App> apps) {
+        mLoader = loader;
+        lv.addAll(apps);
+        lv.hasMore(true);
+        mainContent.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<ArrayList<App>> loader) {
+        System.out.println("LOADER IS DEAD NOW");
     }
 }
